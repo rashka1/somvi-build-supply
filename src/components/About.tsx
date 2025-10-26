@@ -1,4 +1,5 @@
 import { Shield, DollarSign, Truck } from "lucide-react";
+import aboutIllustration from "@/assets/about-illustration.png";
 
 const About = () => {
   const features = [
@@ -30,6 +31,16 @@ const About = () => {
             SOMVI Somalia connects contractors, suppliers, and logistics providers through a single 
             transparent platform — making sourcing faster, safer, and smarter.
           </p>
+        </div>
+
+        {/* Illustration */}
+        <div className="flex justify-center mb-12 animate-fade-in">
+          <img 
+            src={aboutIllustration} 
+            alt="Construction technology and digital connectivity" 
+            className="max-w-md w-full h-auto"
+            loading="lazy"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">

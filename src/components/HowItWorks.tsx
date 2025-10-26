@@ -1,4 +1,5 @@
 import { MessageSquare, FileCheck, Truck } from "lucide-react";
+import processFlow from "@/assets/process-flow.png";
 
 const HowItWorks = () => {
   const steps = [
@@ -32,6 +33,16 @@ const HowItWorks = () => {
           <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
             From request to delivery, we make the entire process seamless
           </p>
+        </div>
+
+        {/* Process Flow Illustration */}
+        <div className="flex justify-center mb-12 animate-fade-in">
+          <img 
+            src={processFlow} 
+            alt="Three step process: Send request, Get quotes, Confirm delivery" 
+            className="max-w-3xl w-full h-auto"
+            loading="lazy"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
