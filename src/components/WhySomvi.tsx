@@ -51,11 +51,11 @@ const WhySomvi = () => {
 
           <div className="mt-12 text-center">
             <div className="inline-block p-8 rounded-xl bg-accent/5 border border-accent/20">
-              <p className="text-2xl md:text-3xl font-bold text-primary mb-2">
+              <p className="text-2xl md:text-3xl font-bold text-primary mb-1">
                 Join 500+ Contractors
               </p>
               <p className="text-muted-foreground">
-                Already building smarter with SOMVI Somalia
+                Trusted by Contractors Across Somalia
               </p>
             </div>
           </div>
