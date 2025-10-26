@@ -9,7 +9,7 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* SOMVI Brand Colors */
-    --background: 249 250 251; /* Light Gray #F9FAFB */
+    --background: 210 20% 98%; /* Light Gray #F9FAFB */
     --foreground: 215 25% 14%; /* Blue-Gray #1E293B */
 
     --card: 0 0% 100%; /* White */
@@ -21,7 +21,7 @@ All colors MUST be HSL.
     --primary: 215 25% 14%; /* Blue-Gray #1E293B */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 249 250 251;
+    --secondary: 210 20% 98%;
     --secondary-foreground: 215 25% 14%;
 
     --muted: 220 13% 91%;
