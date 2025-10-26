@@ -1,5 +1,4 @@
 import { MessageSquare, FileCheck, Truck } from "lucide-react";
-import processFlow from "@/assets/process-flow.png";
 
 const HowItWorks = () => {
   const steps = [
@@ -38,9 +37,9 @@ const HowItWorks = () => {
         {/* Process Flow Illustration */}
         <div className="flex justify-center mb-12 animate-fade-in">
           <img 
-            src={processFlow} 
-            alt="Three step process: Send request, Get quotes, Confirm delivery" 
-            className="max-w-3xl w-full h-auto"
+            src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80"
+            alt="SOMVI workflow process: Request materials, receive verified quotes, confirm and track delivery" 
+            className="max-w-3xl w-full h-auto rounded-lg shadow-lg"
             loading="lazy"
           />
         </div>

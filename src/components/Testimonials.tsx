@@ -24,8 +24,18 @@ const Testimonials = () => {
   ];
 
   return (
-    <section className="py-20 md:py-32 bg-background">
-      <div className="section-container">
+    <section 
+      className="relative py-20 md:py-32 overflow-hidden"
+      style={{
+        backgroundImage: `url(https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-background/95" />
+      
+      <div className="section-container relative z-10">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4">
             Trusted by Contractors Across Somalia

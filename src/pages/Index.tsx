@@ -6,6 +6,7 @@ import HowItWorks from "@/components/HowItWorks";
 import WhySomvi from "@/components/WhySomvi";
 import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 const Index = () => {
   return (
@@ -20,6 +21,7 @@ const Index = () => {
         <Testimonials />
       </main>
       <Footer />
+      <FloatingWhatsApp />
     </div>
   );
 };

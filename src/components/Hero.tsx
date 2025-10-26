@@ -1,6 +1,5 @@
 import { Button } from "./ui/button";
 import { MessageCircle } from "lucide-react";
-import heroImage from "@/assets/hero-construction.jpg";
 
 const Hero = () => {
   return (
@@ -9,7 +8,7 @@ const Hero = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${heroImage})`,
+          backgroundImage: `url(https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1920&q=80)`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/90 to-primary/80" />
@@ -31,7 +30,7 @@ const Hero = () => {
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
           >
             <a
-              href="https://wa.me/2526XXXXXXXXX?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
+              href="https://wa.me/2526154011954?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"

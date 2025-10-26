@@ -1,5 +1,4 @@
 import { CheckCircle } from "lucide-react";
-import trustOverlay from "@/assets/trust-overlay.png";
 
 const WhySomvi = () => {
   const reasons = [
@@ -13,14 +12,15 @@ const WhySomvi = () => {
   return (
     <section id="why-somvi" className="py-20 md:py-32 bg-card relative overflow-hidden">
       {/* Trust Overlay Background */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-        <img 
-          src={trustOverlay} 
-          alt="" 
-          className="w-full max-w-2xl h-auto"
-          loading="lazy"
-          aria-hidden="true"
-        />
+      <div 
+        className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: `url(https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1920&q=80)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-card/50" />
       </div>
 
       <div className="section-container relative z-10">

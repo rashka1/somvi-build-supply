@@ -44,16 +44,16 @@ const Footer = () => {
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <a
-                  href="tel:+2526XXXXXXXXX"
+                  href="tel:+2526154011954"
                   className="text-primary-foreground/80 hover:text-accent transition-colors text-sm"
                 >
-                  +252 6X XXX XXXX
+                  +252 615 401 1954
                 </a>
               </div>
               <div className="flex items-start gap-3">
                 <MessageCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <a
-                  href="https://wa.me/2526XXXXXXXXX"
+                  href="https://wa.me/2526154011954?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary-foreground/80 hover:text-accent transition-colors text-sm"
@@ -76,7 +76,7 @@ const Footer = () => {
               className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               <a
-                href="https://wa.me/2526XXXXXXXXX?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
+                href="https://wa.me/2526154011954?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2"
