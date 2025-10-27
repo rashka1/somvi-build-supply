@@ -1,22 +1,28 @@
 import { MessageSquare, FileCheck, Truck } from "lucide-react";
+import stepRequest from "@/assets/step-request.png";
+import stepCompare from "@/assets/step-compare.png";
+import stepDelivery from "@/assets/step-delivery.png";
 
 const HowItWorks = () => {
   const steps = [
     {
       number: "1",
       icon: MessageSquare,
+      image: stepRequest,
       title: "Send Your Request",
       description: "Contact us via WhatsApp or our platform with your material requirements",
     },
     {
       number: "2",
       icon: FileCheck,
+      image: stepCompare,
       title: "Get Verified Quotes",
       description: "Receive competitive quotes from multiple verified suppliers instantly",
     },
     {
       number: "3",
       icon: Truck,
+      image: stepDelivery,
       title: "Confirm and Receive",
       description: "Choose your supplier and get reliable delivery with real-time tracking",
     },
@@ -34,14 +40,18 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        {/* Process Flow Illustration */}
-        <div className="flex justify-center mb-12 animate-fade-in">
-          <img 
-            src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80"
-            alt="SOMVI workflow process: Request materials, receive verified quotes, confirm and track delivery" 
-            className="max-w-3xl w-full h-auto rounded-lg shadow-lg"
-            loading="lazy"
-          />
+        {/* Visual Step Images */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 max-w-5xl mx-auto">
+          {steps.map((step, index) => (
+            <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <img 
+                src={step.image}
+                alt={`${step.title}: ${step.description}`}
+                className="w-full h-auto rounded-lg shadow-lg"
+                loading="lazy"
+              />
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">

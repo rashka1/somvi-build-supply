@@ -1,4 +1,5 @@
 import { Shield, DollarSign, Truck } from "lucide-react";
+import aboutConnection from "@/assets/about-connection.png";
 
 const About = () => {
   const features = [
@@ -35,8 +36,8 @@ const About = () => {
         {/* Illustration */}
         <div className="flex justify-center mb-12 animate-fade-in">
           <img 
-            src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
-            alt="SOMVI construction technology platform - digital construction management and connectivity" 
+            src={aboutConnection}
+            alt="SOMVI digital construction supply chain: connecting suppliers, contractors, and logistics through transparent platform" 
             className="max-w-md w-full h-auto rounded-lg shadow-lg"
             loading="lazy"
           />
