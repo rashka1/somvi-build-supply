@@ -37,7 +37,7 @@ const Header = () => {
             ))}
             <Button asChild size="lg" className="bg-accent hover:bg-accent/90">
               <a
-                href="https://wa.me/2526154011954?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
+                href="https://wa.me/252615401195?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -71,7 +71,7 @@ const Header = () => {
             ))}
             <Button asChild size="lg" className="w-full bg-accent hover:bg-accent/90">
               <a
-                href="https://wa.me/2526154011954?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
+                href="https://wa.me/252615401195?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
                 target="_blank"
                 rel="noopener noreferrer"
               >
