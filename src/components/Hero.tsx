@@ -25,21 +25,32 @@ const Hero = () => {
           <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
             Order materials instantly, connect with verified suppliers, and track deliveries in real time.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
-          >
-            <a
-              href="https://wa.me/252615401195?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2"
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button
+              asChild
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
             >
-              <MessageCircle className="w-5 h-5" />
-              Get a Quote on WhatsApp
-            </a>
-          </Button>
+              <a
+                href="https://wa.me/252615401195?text=Hi%20SOMVI!%20I%20need%20a%20quote%20for..."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Get a Quote on WhatsApp
+              </a>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+            >
+              <a href="/platform" className="flex items-center gap-2">
+                Go to Platform
+              </a>
+            </Button>
+          </div>
           <p className="text-sm text-primary-foreground/70 mt-4">
             Available 24/7 • Instant Response
           </p>
