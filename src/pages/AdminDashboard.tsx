@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
     // RFQ Details
     doc.setFontSize(10);
     doc.text(`RFQ ID: ${selectedRFQ.id}`, 20, 55);
-    doc.text(`Date: ${new Date(selectedRFQ.date).toLocaleDateString()}`, 20, 62);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 62);
     doc.text(`Valid for: 7 days`, 20, 69);
 
     // Client Info
@@ -123,7 +123,7 @@ const AdminDashboard = () => {
 
     (doc as any).autoTable({
       startY: 125,
-      head: [["Item", "Qty", "Unit", "Unit Price", "Total"]],
+      head: [["Material Name", "Qty", "Unit", "Unit Price", "Total"]],
       body: tableData,
       theme: "striped",
       headStyles: { fillColor: [26, 86, 219] },
@@ -132,24 +132,61 @@ const AdminDashboard = () => {
     // Totals
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.text(`Subtotal: $${calculateSubtotal().toFixed(2)}`, 140, finalY);
-    doc.text(`Markup (${markup}%): $${calculateMarkupAmount().toFixed(2)}`, 140, finalY + 7);
-    doc.text(`Delivery Fee: $${deliveryFee.toFixed(2)}`, 140, finalY + 14);
+    doc.text(`Delivery Fee: $${deliveryFee.toFixed(2)}`, 140, finalY + 7);
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
-    doc.text(`TOTAL: $${calculateTotal().toFixed(2)}`, 140, finalY + 25);
+    doc.text(`Grand Total: $${calculateTotal().toFixed(2)}`, 140, finalY + 18);
 
     // Footer
     doc.setFontSize(9);
     doc.setFont(undefined, "normal");
     doc.setTextColor(100);
     doc.text("Quotation prepared by SOMVI Procurement Team", 20, 270);
-    doc.text("Thank you for your business!", 20, 277);
+    doc.text("Valid for 7 days.", 20, 277);
 
     doc.save(`${selectedRFQ.id}-Quotation.pdf`);
     
     toast({
       title: "PDF Generated",
       description: "Quotation has been downloaded successfully.",
+    });
+  };
+
+  const shareViaWhatsApp = () => {
+    if (!selectedRFQ) return;
+
+    const phone = selectedRFQ.client.phone.replace(/\D/g, "");
+    const itemsList = selectedRFQ.items
+      .map((item) => `• ${item.name}: ${item.quantity} ${item.unit} @ $${(prices[item.id] || 0).toFixed(2)} = $${((prices[item.id] || 0) * item.quantity).toFixed(2)}`)
+      .join("\n");
+
+    const message = `Hello ${selectedRFQ.client.name},
+
+Thank you for your RFQ (${selectedRFQ.id}).
+
+Here is your quotation from SOMVI:
+
+*Materials:*
+${itemsList}
+
+*Summary:*
+Subtotal: $${calculateSubtotal().toFixed(2)}
+Delivery Fee: $${deliveryFee.toFixed(2)}
+*Grand Total: $${calculateTotal().toFixed(2)}*
+
+This quotation is valid for 7 days.
+
+For any questions, please contact our procurement team.
+
+Best regards,
+SOMVI Procurement Team`;
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+
+    toast({
+      title: "WhatsApp Opened",
+      description: "Share the quotation with your client.",
     });
   };
 
@@ -302,10 +339,16 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  <Button onClick={generatePDF} className="w-full">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download PDF Quotation
-                  </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button onClick={generatePDF} className="w-full">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download PDF
+                    </Button>
+                    <Button onClick={shareViaWhatsApp} variant="secondary" className="w-full">
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Share via WhatsApp
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
