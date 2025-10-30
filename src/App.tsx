@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import Platform from "./pages/Platform";
+import MyRFQs from "./pages/MyRFQs";
 import AdminDashboard from "./pages/AdminDashboard";
 import RFQDetails from "./pages/RFQDetails";
 import CompletedOrders from "./pages/CompletedOrders";
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/platform" element={<Platform />} />
+            <Route path="/my-rfqs" element={<MyRFQs />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/rfq/:id" element={<RFQDetails />} />
             <Route path="/admin/completed" element={<CompletedOrders />} />
