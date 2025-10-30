@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, Plus, Trash2, Upload } from "lucide-react";
+import { Eye, Plus, Trash2, Upload, Search, X, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -36,6 +36,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface RFQ {
   id: string;
@@ -50,10 +57,32 @@ interface RFQ {
   status: "Pending" | "Quoted" | "Completed";
 }
 
+interface Material {
+  id: string;
+  name: string;
+  description: string;
+  unit: string;
+  category: string;
+  image?: string;
+}
+
+interface SelectedItem {
+  id: string;
+  name: string;
+  unit: string;
+  category: string;
+  quantity: number;
+}
+
 const RFQManagement = () => {
   const [rfqs, setRfqs] = useState<RFQ[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [filteredMaterials, setFilteredMaterials] = useState<Material[]>([]);
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -68,11 +97,91 @@ const RFQManagement = () => {
 
   useEffect(() => {
     loadRFQs();
+    loadMaterials();
   }, []);
+
+  useEffect(() => {
+    let filtered = materials;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (m) =>
+          m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          m.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter((m) => m.category === selectedCategory);
+    }
+
+    setFilteredMaterials(filtered);
+  }, [searchTerm, selectedCategory, materials]);
 
   const loadRFQs = () => {
     const storedRFQs = JSON.parse(localStorage.getItem("rfqs") || "[]");
     setRfqs(storedRFQs);
+  };
+
+  const loadMaterials = () => {
+    fetch("/data/materials.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setMaterials(data);
+        setFilteredMaterials(data);
+      })
+      .catch((error) => {
+        console.error("Error loading materials:", error);
+        toast({
+          title: "Error Loading Materials",
+          description: "Could not load the materials catalog.",
+          variant: "destructive",
+        });
+      });
+  };
+
+  const addMaterialToSelection = (material: Material) => {
+    const existing = selectedItems.find((item) => item.id === material.id);
+    if (existing) {
+      toast({
+        title: "Already Added",
+        description: `${material.name} is already in the selection.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setSelectedItems([
+      ...selectedItems,
+      {
+        id: material.id,
+        name: material.name,
+        unit: material.unit,
+        category: material.category,
+        quantity: 1,
+      },
+    ]);
+    
+    toast({
+      title: "Material Added",
+      description: `${material.name} has been added to the RFQ.`,
+    });
+  };
+
+  const removeItemFromSelection = (id: string) => {
+    setSelectedItems(selectedItems.filter((item) => item.id !== id));
+  };
+
+  const updateItemQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItemFromSelection(id);
+      return;
+    }
+    setSelectedItems(
+      selectedItems.map((item) =>
+        item.id === id ? { ...item, quantity } : item
+      )
+    );
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +224,9 @@ const RFQManagement = () => {
       projectDetails: "",
     });
     setAttachedFile(null);
+    setSelectedItems([]);
+    setSearchTerm("");
+    setSelectedCategory("All");
   };
 
   const handleCreateRFQ = () => {
@@ -147,10 +259,10 @@ const RFQManagement = () => {
       return;
     }
 
-    if (!formData.description && !attachedFile) {
+    if (selectedItems.length === 0 && !formData.description && !attachedFile) {
       toast({
-        title: "Missing Details",
-        description: "Please describe the material needs or upload a document.",
+        title: "Missing Materials",
+        description: "Please select materials from the catalog or add description/document.",
         variant: "destructive",
       });
       return;
@@ -167,7 +279,7 @@ const RFQManagement = () => {
         email: formData.email,
         phone: formData.phone,
       },
-      items: [],
+      items: selectedItems,
       description: formData.description,
       projectDetails: formData.projectDetails,
       status: "Pending" as const,
@@ -345,7 +457,12 @@ const RFQManagement = () => {
           </CardContent>
         </Card>
 
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) {
+            resetForm();
+          }
+        }}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New RFQ</DialogTitle>
@@ -428,24 +545,128 @@ const RFQManagement = () => {
                   />
                 </div>
 
+                {/* Selected Materials */}
+                {selectedItems.length > 0 && (
+                  <div>
+                    <Label className="text-sm">Selected Materials ({selectedItems.length})</Label>
+                    <div className="mt-1.5 space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3">
+                      {selectedItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-2 p-2 bg-muted rounded-md">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">{item.category} • {item.unit}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => updateItemQuantity(item.id, parseInt(e.target.value) || 1)}
+                              className="w-16 h-8 text-sm"
+                              data-testid={`input-quantity-${item.id}`}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 flex-shrink-0"
+                              onClick={() => removeItemFromSelection(item.id)}
+                              data-testid={`button-remove-${item.id}`}
+                            >
+                              <X className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <Label className="text-sm">Material Catalog *</Label>
+                  <div className="mt-1.5 space-y-3">
+                    {/* Search and Filter */}
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search materials..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-9 h-9"
+                          data-testid="input-search-materials"
+                        />
+                      </div>
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-40 h-9" data-testid="select-category">
+                          <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="All">All</SelectItem>
+                          {Array.from(new Set(materials.map((m) => m.category))).map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Materials List */}
+                    <div className="border rounded-lg max-h-60 overflow-y-auto">
+                      {filteredMaterials.length === 0 ? (
+                        <div className="text-center py-8 text-sm text-muted-foreground">
+                          No materials found
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {filteredMaterials.map((material) => (
+                            <div
+                              key={material.id}
+                              className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm">{material.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {material.category} • {material.unit}
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => addMaterialToSelection(material)}
+                                disabled={selectedItems.some((item) => item.id === material.id)}
+                                data-testid={`button-add-${material.id}`}
+                                className="ml-2 flex-shrink-0"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="admin-description" className="text-sm">
-                    Material Requirements {!attachedFile && "*"}
+                    Additional Notes (Optional)
                   </Label>
                   <Textarea
                     id="admin-description"
                     data-testid="input-admin-description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="List materials and quantities needed"
-                    className="mt-1.5 min-h-[100px]"
-                    rows={5}
+                    placeholder="Any special requirements or notes..."
+                    className="mt-1.5 min-h-[80px]"
+                    rows={3}
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="admin-file" className="text-sm">
-                    Attach Document {!formData.description && "*"}
+                    Attach Document (Optional)
                   </Label>
                   <div className="mt-1.5">
                     <label
