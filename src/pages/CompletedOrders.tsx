@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 interface RFQ {
   id: string;
@@ -69,22 +67,8 @@ const CompletedOrders = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-primary text-primary-foreground shadow-lg">
-        <div className="section-container py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Completed Orders</h1>
-            <Link to="/admin">
-              <Button variant="secondary">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="section-container py-8">
+    <AdminLayout>
+      <div className="section-container py-8">
         <Card>
           <CardHeader>
             <CardTitle>Completed RFQs</CardTitle>
@@ -137,8 +121,8 @@ const CompletedOrders = () => {
             )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Download, Save, CheckCircle } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Download, Save, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/admin/AdminLayout";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -276,25 +277,14 @@ const RFQDetails = () => {
   const suppliers = ["supplier1", "supplier2", "supplier3", "supplier4", "supplier5"] as const;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-primary text-primary-foreground shadow-lg">
-        <div className="section-container py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">RFQ Details: {rfq.id}</h1>
-              <p className="text-sm opacity-90">{rfq.client.name}</p>
-            </div>
-            <Link to="/admin">
-              <Button variant="secondary">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
+    <AdminLayout>
+      <div className="section-container py-8 space-y-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">RFQ Details: {rfq.id}</h1>
+            <p className="text-muted-foreground">{rfq.client.name}</p>
           </div>
         </div>
-      </header>
-
-      <main className="section-container py-8 space-y-6">
         {/* Client Info Card */}
         <Card>
           <CardHeader>
@@ -458,8 +448,8 @@ const RFQDetails = () => {
             </div>
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
