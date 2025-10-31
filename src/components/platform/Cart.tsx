@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { X, Trash2, Send, Upload, MessageCircle, ShoppingCart } from "lucide-react";
+import { Trash2, MessageCircle, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,
   SheetContent,
@@ -24,65 +25,28 @@ const Cart = ({ open, onClose }: CartProps) => {
   const [clientInfo, setClientInfo] = useState({
     name: "",
     company: "",
-    email: "",
-    phone: "",
+    whatsapp: "",
+    projectName: "",
   });
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type and size (max 10MB)
-      const validTypes = ['application/pdf', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-      if (!validTypes.includes(file.type)) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a PDF or Excel file.",
-          variant: "destructive",
-        });
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File Too Large",
-          description: "File size must be less than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setAttachedFile(file);
-    }
-  };
-
-  const handleSubmitRFQ = () => {
+  const handleSubmitRFQ = async () => {
     // Validation
-    if (!clientInfo.name || !clientInfo.email || !clientInfo.phone) {
+    if (!clientInfo.name || !clientInfo.whatsapp || !clientInfo.projectName) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields (Name, Email, Phone).",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate phone format (basic check for Somalia format)
-    const phoneRegex = /^(\+252|252)?[0-9]{9,10}$/;
-    if (!phoneRegex.test(clientInfo.phone.replace(/\s/g, ''))) {
+    // Validate WhatsApp format (must start with country code)
+    const whatsappRegex = /^(\+\d{1,4})\d{8,12}$/;
+    if (!whatsappRegex.test(clientInfo.whatsapp.replace(/\s/g, ''))) {
       toast({
-        title: "Invalid Phone Number",
-        description: "Please enter a valid Somali phone number (e.g., +252615401195)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(clientInfo.email)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
+        title: "Invalid WhatsApp Number",
+        description: "WhatsApp number must start with country code (e.g., +252615401195, +254712345678, +971501234567)",
         variant: "destructive",
       });
       return;
@@ -91,7 +55,7 @@ const Cart = ({ open, onClose }: CartProps) => {
     if (cart.length === 0) {
       toast({
         title: "Empty Cart",
-        description: "Please add materials to your cart before submitting.",
+        description: "Please add materials to your RFQ before submitting.",
         variant: "destructive",
       });
       return;
@@ -99,42 +63,105 @@ const Cart = ({ open, onClose }: CartProps) => {
 
     setIsSubmitting(true);
 
-    // Save RFQ to localStorage for admin dashboard
-    const rfq = {
-      id: `RFQ-${Date.now()}`,
-      date: new Date().toISOString(),
-      client: clientInfo,
-      items: cart,
-      status: "Pending",
-      attachedFileName: attachedFile?.name || null,
-    };
+    try {
+      // Create or get client
+      const cleanWhatsapp = clientInfo.whatsapp.replace(/\s/g, '');
+      
+      const { data: existingClient } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('whatsapp', cleanWhatsapp)
+        .single();
 
-    const existingRFQs = JSON.parse(localStorage.getItem("rfqs") || "[]");
-    localStorage.setItem("rfqs", JSON.stringify([...existingRFQs, rfq]));
+      let clientId = existingClient?.id;
 
-    // Prepare WhatsApp message
-    const itemsList = cart.map((item) => `• ${item.name} - ${item.quantity} ${item.unit}`).join('\n');
-    const whatsappMessage = `🎉 *RFQ Submitted Successfully!*\n\n*RFQ ID:* ${rfq.id}\n*Client:* ${clientInfo.name}\n${clientInfo.company ? `*Company:* ${clientInfo.company}\n` : ''}\n*Materials Requested:*\n${itemsList}\n\nThank you for using SOMVI! Our procurement team will review your request and send you a quotation shortly.`;
-    
-    const encodedMessage = encodeURIComponent(whatsappMessage);
-    const cleanPhone = clientInfo.phone.replace(/\s/g, '').replace(/^\+/, '');
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+      if (!clientId) {
+        const { data: newClient, error: clientError } = await supabase
+          .from('clients')
+          .insert({
+            name: clientInfo.name,
+            company: clientInfo.company || null,
+            whatsapp: cleanWhatsapp,
+          })
+          .select()
+          .single();
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+        if (clientError) throw clientError;
+        clientId = newClient.id;
+      }
+
+      // Generate RFQ number
+      const { data: rfqNumberData } = await supabase.rpc('generate_rfq_number');
+      const rfqNumber = rfqNumberData || `SOMVI-RFQ-${Date.now()}`;
+
+      // Create RFQ
+      const { data: rfq, error: rfqError } = await supabase
+        .from('rfqs')
+        .insert({
+          rfq_number: rfqNumber,
+          client_id: clientId,
+          project_name: clientInfo.projectName,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (rfqError) throw rfqError;
+
+      // Create RFQ items
+      const rfqItems = cart.map(item => ({
+        rfq_id: rfq.id,
+        material_id: item.id,
+        quantity: item.quantity,
+        unit: item.unit,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('rfq_items')
+        .insert(rfqItems);
+
+      if (itemsError) throw itemsError;
+
+      // Create lead for CRM
+      await supabase
+        .from('leads')
+        .insert({
+          rfq_id: rfq.id,
+          client_name: clientInfo.name,
+          whatsapp: cleanWhatsapp,
+          project_name: clientInfo.projectName,
+          stage: 'new',
+        });
+
+      // Prepare WhatsApp message
+      const itemsList = cart.map((item) => `• ${item.name} - ${item.quantity} ${item.unit}`).join('\n');
+      const whatsappMessage = `🎉 *Your request has been received!*\n\n*RFQ Number:* ${rfqNumber}\n*Project:* ${clientInfo.projectName}\n*Client:* ${clientInfo.name}\n${clientInfo.company ? `*Company:* ${clientInfo.company}\n` : ''}\n\n*Materials Requested:*\n${itemsList}\n\n_Our team will contact you via WhatsApp with your quotation._\n\nThank you for choosing SOMVI Somalia Build Supply!`;
+      
+      const encodedMessage = encodeURIComponent(whatsappMessage);
+      const cleanPhone = cleanWhatsapp.replace(/^\+/, '');
+      const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+
       toast({
         title: "RFQ Submitted Successfully! ✅",
-        description: "Sending confirmation via WhatsApp...",
+        description: "Your request has been received. Our team will contact you via WhatsApp.",
       });
       
       // Open WhatsApp with confirmation message
       window.open(whatsappUrl, '_blank');
       
       clearCart();
-      setClientInfo({ name: "", company: "", email: "", phone: "" });
-      setAttachedFile(null);
+      setClientInfo({ name: "", company: "", whatsapp: "", projectName: "" });
       onClose();
-    }, 1000);
+    } catch (error: any) {
+      console.error('Error submitting RFQ:', error);
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit RFQ. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -204,77 +231,46 @@ const Cart = ({ open, onClose }: CartProps) => {
                     id="name"
                     value={clientInfo.name}
                     onChange={(e) => setClientInfo({ ...clientInfo, name: e.target.value })}
-                    placeholder="John Doe"
+                    placeholder="Ahmed Mohamed"
                     className="mt-1.5"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="company" className="text-sm">Company Name</Label>
+                  <Label htmlFor="company" className="text-sm">Company Name (Optional)</Label>
                   <Input
                     id="company"
                     value={clientInfo.company}
                     onChange={(e) => setClientInfo({ ...clientInfo, company: e.target.value })}
-                    placeholder="Optional"
+                    placeholder="Your company name"
                     className="mt-1.5"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-sm">Email Address *</Label>
+                  <Label htmlFor="whatsapp" className="text-sm">WhatsApp Number *</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={clientInfo.email}
-                    onChange={(e) => setClientInfo({ ...clientInfo, email: e.target.value })}
-                    placeholder="john@example.com"
-                    className="mt-1.5"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone" className="text-sm">WhatsApp Number *</Label>
-                  <Input
-                    id="phone"
+                    id="whatsapp"
                     type="tel"
-                    value={clientInfo.phone}
-                    onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value })}
+                    value={clientInfo.whatsapp}
+                    onChange={(e) => setClientInfo({ ...clientInfo, whatsapp: e.target.value })}
                     placeholder="+252 615 401 195"
                     className="mt-1.5"
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    You'll receive confirmation via WhatsApp
+                    Must start with country code (e.g., +252, +254, +971)
                   </p>
                 </div>
-
-                {/* File Upload */}
                 <div>
-                  <Label htmlFor="file" className="text-sm">Attach Document (Optional)</Label>
-                  <div className="mt-1.5">
-                    <label htmlFor="file" className="flex items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer hover:border-accent transition-colors">
-                      <div className="text-center">
-                        {attachedFile ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <Upload className="w-5 h-5 text-accent" />
-                            <p className="text-xs font-medium text-accent truncate max-w-[200px]">{attachedFile.name}</p>
-                            <p className="text-xs text-muted-foreground">{(attachedFile.size / 1024).toFixed(1)} KB</p>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center gap-1">
-                            <Upload className="w-5 h-5 text-muted-foreground" />
-                            <p className="text-xs text-muted-foreground">Upload PDF or Excel (Max 10MB)</p>
-                          </div>
-                        )}
-                      </div>
-                    </label>
-                    <input
-                      id="file"
-                      type="file"
-                      onChange={handleFileChange}
-                      accept=".pdf,.xls,.xlsx"
-                      className="hidden"
-                    />
-                  </div>
+                  <Label htmlFor="projectName" className="text-sm">Project Name *</Label>
+                  <Input
+                    id="projectName"
+                    value={clientInfo.projectName}
+                    onChange={(e) => setClientInfo({ ...clientInfo, projectName: e.target.value })}
+                    placeholder="Villa Construction Project"
+                    className="mt-1.5"
+                    required
+                  />
                 </div>
               </div>
 
